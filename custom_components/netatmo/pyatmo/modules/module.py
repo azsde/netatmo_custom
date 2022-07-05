@@ -4,9 +4,9 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Dict
 
-from ..const import _GETMEASURE_ENDPOINT
+from ..const import GETMEASURE_ENDPOINT, RawData
 from ..exceptions import ApiError
 from ..modules.base_class import EntityBase, NetatmoBase, Place
 from ..modules.device_types import DEVICE_CATEGORY_MAP, DeviceCategory, DeviceType
@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     from ..home import Home
 
 LOG = logging.getLogger(__name__)
+
+ModuleT = Dict[str, Any]
 
 # Hide from features list
 ATTRIBUTE_FILTER = {
@@ -53,26 +55,26 @@ def process_battery_state(data: str) -> int:
 
 
 class FirmwareMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.firmware_revision: int | None = None
         self.firmware_name: str | None = None
 
 
 class WifiMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.wifi_strength: int | None = None
 
 
 class RfMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.rf_strength: int | None = None
 
 
 class RainMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.rain: float | None = None
         self.sum_rain_1: float | None = None
@@ -80,7 +82,7 @@ class RainMixin(EntityBase):
 
 
 class WindMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.wind_strength: int | None = None
         self.wind_angle: int | None = None
@@ -90,16 +92,12 @@ class WindMixin(EntityBase):
     @property
     def wind_direction(self) -> str | None:
         """Return wind direction."""
-        if self.wind_angle is None:
-            return None
-        return process_angle(self.wind_angle)
+        return None if self.wind_angle is None else process_angle(self.wind_angle)
 
     @property
     def gust_direction(self) -> str | None:
         """Return gust direction."""
-        if self.gust_angle is None:
-            return None
-        return process_angle(self.gust_angle)
+        return None if self.gust_angle is None else process_angle(self.gust_angle)
 
 
 def process_angle(angle: int) -> str:
@@ -124,7 +122,7 @@ def process_angle(angle: int) -> str:
 
 
 class TemperatureMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.temperature: float | None = None
         self.temp_min: float | None = None
@@ -137,31 +135,31 @@ class TemperatureMixin(EntityBase):
 
 
 class HumidityMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.humidity: int | None = None
 
 
 class CO2Mixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.co2: int | None = None
 
 
 class HealthIndexMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.health_idx: int | None = None
 
 
 class NoiseMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.noise: int | None = None
 
 
 class PressureMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.pressure: float | None = None
         self.absolute_pressure: float | None = None
@@ -169,13 +167,13 @@ class PressureMixin(EntityBase):
 
 
 class BoilerMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.boiler_status: bool | None = None
 
 
 class BatteryMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.battery_state: str | None = None
         self.battery_level: int | None = None
@@ -191,13 +189,13 @@ class BatteryMixin(EntityBase):
 
 
 class PlaceMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.place: Place | None = None
 
 
 class DimmableMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.brightness: int | None = None
 
@@ -216,31 +214,31 @@ class DimmableMixin(EntityBase):
 
 
 class ApplianceTypeMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.appliance_type: str | None = None
 
 
 class EnergyMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.sum_energy_elec: int | None = None
 
 
 class PowerMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.power: int | None = None
 
 
 class EventMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.events: list[Event] = []
 
 
 class SwitchMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.on: bool | None = None
 
@@ -267,7 +265,7 @@ class SwitchMixin(EntityBase):
 
 
 class ShutterMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.current_position: int | None = None
         self.target_position: int | None = None
@@ -299,7 +297,7 @@ class ShutterMixin(EntityBase):
 
 
 class CameraMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.sd_status: int | None = None
         self.vpn_url: str | None = None
@@ -353,7 +351,7 @@ class CameraMixin(EntityBase):
 
 
 class FloodlightMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.floodlight: str | None = None
 
@@ -383,13 +381,13 @@ class FloodlightMixin(EntityBase):
 
 
 class StatusMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.status: str | None = None
 
 
 class MonitoringMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
         self.monitoring: bool | None = None
 
@@ -439,15 +437,15 @@ class MeasureType(Enum):
 
 
 class HistoryMixin(EntityBase):
-    def __init__(self, home: Home, module: dict):
+    def __init__(self, home: Home, module: ModuleT):
         super().__init__(home, module)  # type: ignore # mypy issue 4335
-        self.historical_data: list | None = None
+        self.historical_data: list[dict[str, Any]] | None = None
         self.start_time: int | None = None
         self.interval: MeasureInterval | None = None
 
     async def async_update_measures(
         self,
-        start_time: int = None,
+        start_time: int | None = None,
         interval: MeasureInterval = MeasureInterval.HOUR,
         days: int = 7,
     ) -> None:
@@ -466,7 +464,7 @@ class HistoryMixin(EntityBase):
         }
 
         resp = await self.home.auth.async_post_api_request(
-            endpoint=_GETMEASURE_ENDPOINT,
+            endpoint=GETMEASURE_ENDPOINT,
             params=params,
         )
         raw_data = await resp.json()
@@ -474,7 +472,7 @@ class HistoryMixin(EntityBase):
         data = raw_data["body"][0]
         self.start_time = int(data["beg_time"])
         interval_sec = int(data["step_time"])
-        interval_min = int(interval_sec / 60)
+        interval_min = interval_sec // 60
 
         self.historical_data = []
         start_time = self.start_time
@@ -485,10 +483,11 @@ class HistoryMixin(EntityBase):
                     "duration": interval_min,
                     "startTime": datetime.utcfromtimestamp(start_time + 1).isoformat()
                     + "Z",
-                    "endTime": datetime.utcfromtimestamp(end_time).isoformat() + "Z",
+                    "endTime": f"{datetime.utcfromtimestamp(end_time).isoformat()}Z",
                     "Wh": value[0],
                 },
             )
+
             start_time = end_time
 
 
@@ -501,9 +500,9 @@ class Module(NetatmoBase):
 
     modules: list[str] | None
     reachable: bool | None
-    features: set
+    features: set[str]
 
-    def __init__(self, home: Home, module: dict) -> None:
+    def __init__(self, home: Home, module: ModuleT) -> None:
         super().__init__(module)
         self.device_type = DeviceType(module["type"])
         self.home = home
@@ -514,7 +513,7 @@ class Module(NetatmoBase):
         self.device_category = DEVICE_CATEGORY_MAP.get(self.device_type)
         self.features = set()
 
-    async def update(self, raw_data: dict) -> None:
+    async def update(self, raw_data: RawData) -> None:
         self.update_topology(raw_data)
         self.update_features()
 
@@ -546,7 +545,9 @@ class Camera(
     WifiMixin,
     Module,
 ):
-    ...
+    async def update(self, raw_data: RawData) -> None:
+        await Module.update(self, raw_data)
+        await self.async_update_camera_urls()
 
 
 class Switch(FirmwareMixin, PowerMixin, SwitchMixin, Module):

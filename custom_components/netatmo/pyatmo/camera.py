@@ -6,21 +6,24 @@ import time
 from abc import ABC
 from collections import defaultdict
 from typing import Any
+from warnings import warn
 
 import aiohttp
 from requests.exceptions import ReadTimeout
 
 from .auth import AbstractAsyncAuth, NetatmoOAuth2
 from .const import (
-    _GETCAMERAPICTURE_ENDPOINT,
-    _GETEVENTSUNTIL_ENDPOINT,
-    _GETHOMEDATA_ENDPOINT,
-    _SETPERSONSAWAY_ENDPOINT,
-    _SETPERSONSHOME_ENDPOINT,
-    _SETSTATE_ENDPOINT,
+    GETCAMERAPICTURE_ENDPOINT,
+    GETEVENTSUNTIL_ENDPOINT,
+    GETHOMEDATA_ENDPOINT,
+    SETPERSONSAWAY_ENDPOINT,
+    SETPERSONSHOME_ENDPOINT,
+    SETSTATE_ENDPOINT,
 )
 from .exceptions import ApiError, NoDevice
 from .helpers import LOG, extract_raw_data
+
+warn(f"The module {__name__} is deprecated.", DeprecationWarning, stacklevel=2)
 
 
 class AbstractCameraData(ABC):
@@ -459,14 +462,14 @@ class CameraData(AbstractCameraData):
         """Initialize the Netatmo camera data.
 
         Arguments:
-            auth {NetatmoOAuth2} -- Authentication information with a valid access token
+            auth {NetatmoOAuth2} -- Authentication information with valid access token
         """
         self.auth = auth
 
     def update(self, events: int = 30) -> None:
         """Fetch and process data from API."""
         resp = self.auth.post_api_request(
-            endpoint=_GETHOMEDATA_ENDPOINT,
+            endpoint=GETHOMEDATA_ENDPOINT,
             params={"size": events},
         )
 
@@ -540,7 +543,7 @@ class CameraData(AbstractCameraData):
 
         try:
             resp = self.auth.post_api_request(
-                endpoint=_SETSTATE_ENDPOINT,
+                endpoint=SETSTATE_ENDPOINT,
                 params=post_params,
             ).json()
         except ApiError as err_msg:
@@ -560,7 +563,7 @@ class CameraData(AbstractCameraData):
         if person_ids:
             post_params["person_ids[]"] = person_ids
         return self.auth.post_api_request(
-            endpoint=_SETPERSONSHOME_ENDPOINT,
+            endpoint=SETPERSONSHOME_ENDPOINT,
             params=post_params,
         ).json()
 
@@ -568,7 +571,7 @@ class CameraData(AbstractCameraData):
         """Mark a person as away or set the whole home to being empty."""
         post_params = {"home_id": home_id, "person_id": person_id}
         return self.auth.post_api_request(
-            endpoint=_SETPERSONSAWAY_ENDPOINT,
+            endpoint=SETPERSONSAWAY_ENDPOINT,
             params=post_params,
         ).json()
 
@@ -580,7 +583,7 @@ class CameraData(AbstractCameraData):
         """Download a specific image (of an event or user face) from the camera."""
         post_params = {"image_id": image_id, "key": key}
         resp = self.auth.post_api_request(
-            endpoint=_GETCAMERAPICTURE_ENDPOINT,
+            endpoint=GETCAMERAPICTURE_ENDPOINT,
             params=post_params,
         ).content
         image_type = imghdr.what("NONE.FILE", resp)
@@ -619,7 +622,7 @@ class CameraData(AbstractCameraData):
         resp: dict[str, Any] | None = None
         try:
             resp = self.auth.post_api_request(
-                endpoint=_GETEVENTSUNTIL_ENDPOINT,
+                endpoint=GETEVENTSUNTIL_ENDPOINT,
                 params=post_params,
             ).json()
             if resp is not None:
@@ -644,14 +647,14 @@ class AsyncCameraData(AbstractCameraData):
         """Initialize the Netatmo camera data.
 
         Arguments:
-            auth {AbstractAsyncAuth} -- Authentication information with a valid access token
+            auth {AbstractAsyncAuth} -- Authentication information with valid access token
         """
         self.auth = auth
 
     async def async_update(self, events: int = 30) -> None:
         """Fetch and process data from API."""
         resp = await self.auth.async_post_api_request(
-            endpoint=_GETHOMEDATA_ENDPOINT,
+            endpoint=GETHOMEDATA_ENDPOINT,
             params={"size": events},
         )
 
@@ -703,7 +706,7 @@ class AsyncCameraData(AbstractCameraData):
 
         try:
             resp = await self.auth.async_post_api_request(
-                endpoint=_SETSTATE_ENDPOINT,
+                endpoint=SETSTATE_ENDPOINT,
                 params=post_params,
             )
         except ApiError as err_msg:
@@ -764,7 +767,7 @@ class AsyncCameraData(AbstractCameraData):
         if person_ids:
             post_params["person_ids[]"] = person_ids
         return await self.auth.async_post_api_request(
-            endpoint=_SETPERSONSHOME_ENDPOINT,
+            endpoint=SETPERSONSHOME_ENDPOINT,
             params=post_params,
         )
 
@@ -774,7 +777,7 @@ class AsyncCameraData(AbstractCameraData):
         if person_id:
             post_params["person_id"] = person_id
         return await self.auth.async_post_api_request(
-            endpoint=_SETPERSONSAWAY_ENDPOINT,
+            endpoint=SETPERSONSAWAY_ENDPOINT,
             params=post_params,
         )
 
@@ -801,7 +804,7 @@ class AsyncCameraData(AbstractCameraData):
         """Download a specific image (of an event or user face) from the camera."""
         post_params = {"image_id": image_id, "key": key}
         resp = await self.auth.async_get_image(
-            endpoint=_GETCAMERAPICTURE_ENDPOINT,
+            endpoint=GETCAMERAPICTURE_ENDPOINT,
             params=post_params,
         )
 
